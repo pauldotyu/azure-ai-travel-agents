@@ -40,6 +40,9 @@ services:
     project: src/tools/customer-query/AITravelAgent.CustomerQueryServer
     language: dotnet
     host: aks
+    docker:
+      context: .
+      path: ../Dockerfile
     hooks:
       predeploy:
         posix:
