@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: ai-travel-agents
+metadata:
+  template: ai-travel-agents@1.13.1
+infra:
+  provider: terraform
+  path: infra/terraform
+services:
+  api:
+    project: src/api
+    language: ts
+    host: aks
+    hooks:
+      predeploy:
+        posix:
+          shell: sh
+          run: ../../azd-hooks/predeploy.sh api javascript 4000 80
+      postdeploy:
+        posix:
+          shell: sh
+          run: ../../azd-hooks/postdeploy.sh api
+  ui:
+    project: src/ui
+    language: ts
+    host: aks
+    docker:
+      context: .
+      path: Dockerfile.production
+    hooks:
+      predeploy:
+        posix:
+          shell: sh
+          run: ../../azd-hooks/predeploy.sh ui javascript 80 80
+      postdeploy:
+        posix:
+          shell: sh
+          run: ../../azd-hooks/postdeploy.sh ui
+  customer-query:
+    project: src/tools/customer-query/AITravelAgent.CustomerQueryServer
+    language: dotnet
+    host: aks
+    hooks:
+      predeploy:
+        posix:
+          shell: sh
+          run: ../../../../azd-hooks/predeploy.sh customer-query dotnet 8080 80
+      postdeploy:
+        posix:
+          shell: sh
+          run: ../../../../azd-hooks/postdeploy.sh customer-query
+  destination-recommendation:
+    project: src/tools/destination-recommendation
+    language: java
+    host: aks
+    hooks:
+      predeploy:
+        posix:
+          shell: sh
+          run: ../../../azd-hooks/predeploy.sh destination-recommendation java 8080 80
+      postdeploy:
+        posix:
+          shell: sh
+          run: ../../../azd-hooks/postdeploy.sh destination-recommendation
+  itinerary-planning:
+    project: src/tools/itinerary-planning
+    language: python
+    host: aks
+    hooks:
+      predeploy:
+        posix:
+          shell: sh
+          run: ../../../azd-hooks/predeploy.sh itinerary-planning python 8000 80
+      postdeploy:
+        posix:
+          shell: sh
+          run: ../../../azd-hooks/postdeploy.sh itinerary-planning
+  echo-ping:
+    project: src/tools/echo-ping
+    language: ts
+    host: aks
+    hooks:
+      predeploy:
+        posix:
+          shell: sh
+          run: ../../../azd-hooks/predeploy.sh echo-ping javascript 3000 80
+      postdeploy:
+        posix:
+          shell: sh
+          run: ../../../azd-hooks/postdeploy.sh echo-ping
+workflows:
+  up:
+    steps:
+      - azd: provision
+      - azd: deploy api
+      - azd: deploy ui
+      - azd: deploy customer-query
+      - azd: deploy destination-recommendation
+      - azd: deploy itinerary-planning
+      - azd: deploy echo-ping
