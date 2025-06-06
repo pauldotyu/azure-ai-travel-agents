@@ -41,7 +41,7 @@ services:
     language: dotnet
     host: aks
     docker:
-      context: .
+      context: ..
       path: ../Dockerfile
     hooks:
       predeploy:
